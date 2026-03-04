@@ -2,74 +2,59 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Jared Inbox Fix</title>
     <style>
-        * { box-sizing: border-box; }
-        body { font-family: sans-serif; background: #0f172a; color: #f8fafc; margin: 0; padding: 15px; display: flex; justify-content: center; }
-        .container { background: #1e293b; padding: 20px; border-radius: 20px; border: 1px solid #334155; width: 100%; max-width: 400px; }
-        h2 { color: #3b82f6; text-align: center; margin-top: 0; }
-        .input-group { background: #0f172a; border: 1px solid #475569; border-radius: 12px; padding: 5px 10px; display: flex; align-items: center; margin-bottom: 10px; }
-        input { flex: 1; background: transparent; border: none; color: #60a5fa; font-weight: bold; font-size: 16px; padding: 12px 5px; outline: none; }
-        .btn { padding: 14px; border: none; border-radius: 12px; font-weight: bold; cursor: pointer; color: white; margin-bottom: 10px; width: 100%; }
-        .btn-blue { background: #3b82f6; }
-        .btn-green { background: #22c55e; }
-        .monitor-box { background: #0f172a; padding: 15px; border-radius: 15px; border-left: 4px solid #3b82f6; margin-top: 10px; min-height: 100px; }
-        .code-output { font-size: 1.1rem; font-weight: bold; color: #22c55e; word-break: break-all; }
+        body { font-family: sans-serif; background: #0f172a; color: white; padding: 20px; text-align: center; }
+        .container { background: #1e293b; padding: 20px; border-radius: 15px; max-width: 400px; margin: auto; }
+        input { width: 100%; padding: 12px; margin: 10px 0; border-radius: 8px; border: 1px solid #475569; background: #0f172a; color: #60a5fa; }
+        button { width: 100%; padding: 12px; border-radius: 8px; border: none; font-weight: bold; cursor: pointer; margin-bottom: 10px; }
+        .btn-check { background: #22c55e; color: white; }
+        #display { background: #0f172a; padding: 15px; border-radius: 10px; margin-top: 10px; min-height: 50px; word-break: break-all; color: #22c55e; }
     </style>
 </head>
 <body>
-
-<div class="container">
-    <h2>📬 Jared Inbox</h2>
-    <div class="input-group">
-        <input type="text" id="username" placeholder="Enter name">
-        <span style="color:#94a3b8; font-weight:bold;">@jared.work.gd</span>
+    <div class="container">
+        <h2>📬 Jared Inbox</h2>
+        <input type="text" id="username" placeholder="Username (e.g. gork9eng)">
+        <button class="btn-check" onclick="fetchData()">CHECK INBOX</button>
+        <div id="display">Waiting for input...</div>
     </div>
-    <button class="btn btn-blue" onclick="copyEmail()">📋 Copy Email</button>
-    <button class="btn btn-green" onclick="fetchData()">🔄 Check Code Now</button>
-    <div id="display" class="monitor-box">
-        <div style="text-align: center; color: #64748b;">Ready to monitor...</div>
-    </div>
-</div>
 
-<script>
-    const API_KEY = "b59e464c567a2ce3de4b30e3c83a34d8"; //
-    const DS_ID = "ds_1OuNodY"; //
+    <script>
+        const API_KEY = "b59e464c567a2ce3de4b30e3c83a34d8"; 
+        const DS_ID = "ds_1OuNodY"; 
 
-    function copyEmail() {
-        const email = document.getElementById('username').value + "@jared.work.gd";
-        navigator.clipboard.writeText(email);
-        alert("Copied!");
-    }
+        async function fetchData() {
+            const user = document.getElementById('username').value.trim();
+            if(!user) return alert("Enter name!");
+            
+            const targetEmail = user + "@jared.work.gd";
+            const display = document.getElementById('display');
+            display.innerHTML = "🔍 Fetching via Proxy...";
 
-    async function fetchData() {
-        const user = document.getElementById('username').value.trim();
-        if(!user) return alert("Enter name!");
-        const target = user + "@jared.work.gd";
-        const display = document.getElementById('display');
-        display.innerHTML = "Checking...";
+            // Gagamit tayo ng proxy para ma-bypass ang CORS
+            const apiUrl = `https://api.pipedream.com/v1/data_stores/${DS_ID}/keys/${targetEmail}`;
+            const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(apiUrl)}`;
 
-        try {
-            // Sinubukan nating tanggalin ang proxy muna para makita kung headers lang ang issue
-            const res = await fetch(`https://api.pipedream.com/v1/data_stores/${DS_ID}/keys/${target}`, {
-                method: 'GET',
-                headers: { 
-                    "Authorization": `Bearer ${API_KEY}`
+            try {
+                const res = await fetch(proxyUrl, {
+                    headers: { "Authorization": `Bearer ${API_KEY}` }
+                });
+                const data = await res.json();
+                
+                // Ang allorigins ay nagbabalik ng string sa data.contents
+                const pipedreamData = JSON.parse(data.contents);
+
+                if (pipedreamData.value) {
+                    display.innerHTML = "<b>LATEST CODE:</b><br>" + pipedreamData.value;
+                } else {
+                    display.innerHTML = "❌ No code found for " + targetEmail;
                 }
-            });
-
-            if (res.status === 404) {
-                display.innerHTML = "No email found for this address.";
-                return;
+            } catch (e) {
+                display.innerHTML = "🚫 Error: " + e.message;
             }
-
-            const data = await res.json();
-            display.innerHTML = `<div class="code-output">${data.value}</div>`;
-        } catch (e) {
-            display.innerHTML = `<span style="color:red;">Error: ${e.message}</span><br>Try disabling Adblock or using a different browser.`;
         }
-    }
-</script>
+    </script>
 </body>
 </html>
