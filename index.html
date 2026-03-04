@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Jared Inbox Pro</title>
+    <style>
+        * { box-sizing: border-box; }
+        body { font-family: -apple-system, system-ui, sans-serif; background: #0f172a; color: #f8fafc; margin: 0; padding: 15px; display: flex; justify-content: center; }
+        .container { background: #1e293b; padding: 20px; border-radius: 20px; border: 1px solid #334155; width: 100%; max-width: 400px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+        h2 { color: #3b82f6; margin: 0 0 20px 0; text-align: center; font-size: 1.5rem; text-transform: uppercase; }
+        
+        /* Input Section with Enter Button */
+        .input-group { background: #0f172a; border: 1px solid #475569; border-radius: 12px; padding: 5px 10px; display: flex; align-items: center; margin-bottom: 10px; }
+        input { flex: 1; background: transparent; border: none; color: #60a5fa; font-weight: bold; font-size: 16px; padding: 12px 5px; outline: none; width: 40%; }
+        .domain { color: #94a3b8; font-weight: bold; font-size: 0.85rem; margin-right: 8px; white-space: nowrap; }
+        .btn-enter { background: #3b82f6; border: none; color: white; padding: 8px 15px; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 0.8rem; }
+
+        .btn-row { display: flex; gap: 10px; margin-bottom: 15px; }
+        .btn { flex: 1; padding: 14px; border: none; border-radius: 12px; font-weight: bold; font-size: 0.9rem; cursor: pointer; color: white; transition: 0.2s; }
+        .btn-random { background: #8b5cf6; }
+        .btn-copy { background: #f59e0b; }
+        .btn-refresh { background: #22c55e; width: 100%; margin-bottom: 15px; font-size: 1rem; }
+        button:active { transform: scale(0.96); opacity: 0.9; }
+
+        .status-row { font-size: 0.75rem; color: #94a3b8; display: flex; justify-content: space-between; margin-bottom: 10px; padding: 0 5px; }
+        
+        /* Inbox Monitoring Area - Mobile Optimized */
+        .monitor-box { background: #0f172a; padding: 15px; border-radius: 15px; border-left: 4px solid #3b82f6; text-align: left; margin-top: 10px; overflow: hidden; min-height: 100px; }
+        .box-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+        .box-label { font-size: 0.7rem; color: #64748b; font-weight: bold; text-transform: uppercase; }
+        .btn-copy-code { background: #3b82f6; border: none; color: white; padding: 6px 12px; border-radius: 6px; font-size: 0.75rem; font-weight: bold; }
+        
+        /* Word Wrapping - Para hindi lumagpas ang letters */
+        .code-output { 
+            font-size: 1.1rem; 
+            font-weight: bold; 
+            color: #22c55e; 
+            word-wrap: break-word; 
+            word-break: break-all; 
+            white-space: pre-wrap;
+            line-height: 1.4;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>📬 Jared Inbox</h2>
+    
+    <div class="input-group">
+        <input type="text" id="username" placeholder="Enter name">
+        <span class="domain">@jared.work.gd</span>
+        <button class="btn-enter" onclick="manualCheck()">ENTER</button>
+    </div>
+
+    <div class="btn-row">
+        <button class="btn btn-random" onclick="generateRandom()">🎲 Random</button>
+        <button class="btn btn-copy" onclick="copyEmail()">📋 Copy Email</button>
+    </div>
+
+    <button class="btn btn-refresh" onclick="manualCheck()">🔄 Force Refresh</button>
+    
+    <div class="status-row">
+        <span>Auto-Sync: <b style="color:#22c55e">ACTIVE (5s)</b></span>
+        <span id="lastSync">Last: Never</span>
+    </div>
+
+    <div class="monitor-box" id="display">
+        <div style="text-align: center; color: #64748b; padding: 20px;">Monitoring for incoming emails...</div>
+    </div>
+</div>
+
+<script>
+    // Config from your Screenshots
+    const API_KEY = "b59e464c567a2ce3de4b30e3c83a34d8"; //
+    const DS_ID = "ds_1OuNodY"; // Corrected ID from
+    const DOMAIN = "@jared.work.gd";
+    
+    let timer = null;
+
+    window.onload = () => {
+        generateRandom();
+        startMonitor();
+    };
+
+    function generateRandom() {
+        const chars = 'abcdefghijklmnopqrstuvwxyz0123456789';
+        let res = '';
+        for (let i = 0; i < 8; i++) res += chars.charAt(Math.floor(Math.random() * chars.length));
+        document.getElementById('username').value = res;
+        manualCheck();
+    }
+
+    function copyEmail() {
+        const user = document.getElementById('username').value.trim();
+        if(!user) return;
+        navigator.clipboard.writeText(user + DOMAIN);
+        alert("Copied: " + user + DOMAIN);
+    }
+
+    function copyCode(text) {
+        navigator.clipboard.writeText(text);
+        alert("Code copied!");
+    }
+
+    function startMonitor() {
+        if(timer) clearInterval(timer);
+        timer = setInterval(fetchData, 5000);
+    }
+
+    function manualCheck() {
+        fetchData();
+        startMonitor();
+    }
+
+    async function fetchData() {
+        const user = document.getElementById('username').value.trim();
+        if(!user) return;
+        const target = user + DOMAIN;
+        const display = document.getElementById('display');
+        document.getElementById('lastSync').innerText = "Last: " + new Date().toLocaleTimeString();
+
+        try {
+            const res = await fetch(`https://api.pipedream.com/v1/data_stores/${DS_ID}/keys/${target}`, {
+                headers: { "Authorization": `Bearer ${API_KEY}` }
+            });
+
+            if (res.status === 404) {
+                display.innerHTML = `<div style="color:#94a3b8; text-align:center; font-size:0.8rem; margin-top:10px;">No data for: <br><b>${target}</b></div>`;
+                return;
+            }
+
+            const data = await res.json();
+            if(data.value) {
+                display.innerHTML = `
+                    <div class="box-header">
+                        <span class="box-label">Latest Code/Subject</span>
+                        <button class="btn-copy-code" onclick="copyCode('${data.value.replace(/'/g, "\\'")}')">Copy</button>
+                    </div>
+                    <div class="code-output">${data.value}</div>
+                `;
+            }
+        } catch (e) {
+            display.innerHTML = `<div style="color:#ef4444; font-size:0.8rem; text-align:center;"><b>Error:</b> Fetch failed. Check your API key or data store permissions.</div>`;
+        }
+    }
+</script>
+</body>
+</html>
