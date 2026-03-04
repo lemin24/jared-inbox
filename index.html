@@ -109,9 +109,7 @@
         emailInput.addEventListener('change', fetchInboxData);
 
         setInterval(fetchInboxData, 5000);
-        window.addEventListener('load', () => {
-            if (emailInput.value) fetchInboxData();
-        });
+        window.addEventListener('load', generateRandomEmail);
     </script>
 </body>
 </html>
