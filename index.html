@@ -1,103 +1,144 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="fil">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Data Store Inbox</title>
+    <title>[Pangalan Mo] - Web Developer</title>
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: Arial, sans-serif; }
-        body { padding: 1rem; max-width: 600px; margin: 0 auto; background-color: #f5f5f5; }
-        .container { background: white; padding: 1.5rem; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
-        .input-group { margin-bottom: 1rem; }
-        label { display: block; margin-bottom: 0.5rem; font-weight: bold; }
-        input { width: 100%; padding: 0.8rem; border: 1px solid #ddd; border-radius: 4px; font-size: 1rem; }
-        .btn-group { display: flex; gap: 0.5rem; margin-bottom: 1.5rem; }
-        button { padding: 0.8rem 1rem; border: none; border-radius: 4px; cursor: pointer; font-size: 1rem; color: white; }
-        #generateBtn { background-color: #2196F3; }
-        #copyBtn { background-color: #4CAF50; }
-        .inbox-section { margin-top: 1rem; }
-        .inbox-title { margin-bottom: 0.5rem; font-weight: bold; font-size: 1.1rem; }
-        #inboxDisplay { min-height: 100px; padding: 1rem; border: 1px solid #ddd; border-radius: 4px; background-color: #fafafa; white-space: pre-wrap; }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Arial', sans-serif; }
+        :root {
+            --primary-color: #2A52BE; /* Asul na katulad ng watawat ng Pilipinas */
+            --secondary-color: #F7B32B; /* Dilaw */
+            --dark-color: #1A1A2E;
+            --light-color: #F5F5F5;
+        }
+        body { background-color: var(--light-color); color: var(--dark-color); }
+        .container { max-width: 1000px; margin: 0 auto; padding: 0 1rem; }
+
+        /* Header */
+        header { background-color: var(--primary-color); color: white; padding: 2rem 0; text-align: center; }
+        header h1 { font-size: 2rem; margin-bottom: 0.5rem; }
+        header p { font-size: 1.1rem; opacity: 0.9; }
+        .profile-img { width: 150px; height: 150px; border-radius: 50%; border: 4px solid var(--secondary-color); margin-bottom: 1rem; }
+
+        /* Sections */
+        section { padding: 3rem 0; }
+        section h2 { color: var(--primary-color); font-size: 1.8rem; margin-bottom: 1.5rem; text-align: center; border-bottom: 2px solid var(--secondary-color); display: inline-block; padding-bottom: 0.5rem; }
+        .about-content { max-width: 700px; margin: 0 auto; line-height: 1.8; font-size: 1.1rem; text-align: justify; }
+
+        /* Projects */
+        .projects-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 2rem; margin-top: 2rem; }
+        .project-card { background: white; padding: 1.5rem; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); text-align: center; }
+        .project-card img { width: 100%; height: 180px; object-fit: cover; border-radius: 4px; margin-bottom: 1rem; }
+        .project-card h3 { color: var(--primary-color); margin-bottom: 0.5rem; }
+        .project-links { margin-top: 1rem; }
+        .project-links a { display: inline-block; padding: 0.5rem 1rem; margin: 0 0.5rem; background-color: var(--primary-color); color: white; text-decoration: none; border-radius: 4px; font-size: 0.9rem; }
+        .project-links a:hover { background-color: #1E3A8A; }
+
+        /* Skills */
+        .skills-list { display: flex; flex-wrap: wrap; justify-content: center; gap: 1rem; margin-top: 2rem; }
+        .skill-tag { background-color: var(--secondary-color); color: var(--dark-color); padding: 0.8rem 1.2rem; border-radius: 20px; font-weight: bold; }
+
+        /* Contact */
+        #contact { background-color: var(--dark-color); color: white; text-align: center; }
+        #contact h2 { color: white; border-color: var(--secondary-color); }
+        .contact-links { margin-top: 2rem; }
+        .contact-links a { color: var(--secondary-color); text-decoration: none; margin: 0 1rem; font-size: 1.2rem; }
+        .contact-links a:hover { text-decoration: underline; }
+
+        /* Footer */
+        footer { background-color: var(--primary-color); color: white; text-align: center; padding: 1rem 0; font-size: 0.9rem; }
     </style>
 </head>
 <body>
-    <div class="container">
-        <div class="input-group">
-            <label for="emailInput">Custom Email:</label>
-            <input type="text" id="emailInput" placeholder="e.g., user@jared.work.gd">
+    <!-- Header -->
+    <header>
+        <div class="container">
+            <img src="https://via.placeholder.com/150" alt="Iyong Larawan" class="profile-img">
+            <h1>Juan Dela Cruz</h1>
+            <p>Web Developer | Batang Ormoc</p>
         </div>
-        <div class="btn-group">
-            <button id="generateBtn">Generate Random Email</button>
-            <button id="copyBtn">Copy Current Email</button>
+    </header>
+
+    <!-- About Section -->
+    <section id="about">
+        <div class="container">
+            <h2>Tungkol sa Akin</h2>
+            <div class="about-content">
+                <p>Hello! Ako si Juan, isang batang web developer mula sa Ormoc City, Leyte. Mahilig akong gumawa ng maganda at functional na websites na nakakatulong sa mga lokal na negosyo at komunidad. Nagsisimula pa lang ako sa larangan ng tech, pero masigasig akong matuto at gumawa ng mga proyekto na may kabuluhan.</p>
+                <br>
+                <p>Nag-aral ako ng Computer Science sa lokal na unibersidad at nagsisimula nang magtrabaho sa mga maliit na proyekto para sa mga kaibigan at lokal na negosyo. Mahilig din akong maglaro ng basketball at maglakad-lakad sa mga dalampasigan ng Ormoc!</p>
+            </div>
         </div>
-        <div class="inbox-section">
-            <div class="inbox-title">Inbox Data (auto-refreshes every 5s):</div>
-            <div id="inboxDisplay">Loading...</div>
+    </section>
+
+    <!-- Projects Section -->
+    <section id="projects">
+        <div class="container">
+            <h2>Mga Proyekto</h2>
+            <div class="projects-grid">
+                <div class="project-card">
+                    <img src="https://via.placeholder.com/300x180" alt="Proyekto 1">
+                    <h3>Ormoc Local Directory</h3>
+                    <p>Isang website na naglilista ng mga lokal na negosyo sa Ormoc City.</p>
+                    <div class="project-links">
+                        <a href="#">Live Demo</a>
+                        <a href="#">GitHub</a>
+                    </div>
+                </div>
+                <div class="project-card">
+                    <img src="https://via.placeholder.com/300x180" alt="Proyekto 2">
+                    <h3>Budget Tracker Pinoy</h3>
+                    <p>App para subaybayan ang kita at gastos na angkop sa pamumuhay ng Pinoy.</p>
+                    <div class="project-links">
+                        <a href="#">Live Demo</a>
+                        <a href="#">GitHub</a>
+                    </div>
+                </div>
+                <div class="project-card">
+                    <img src="https://via.placeholder.com/300x180" alt="Proyekto 3">
+                    <h3>Personal Blog</h3>
+                    <p>Blog tungkol sa tech tips at mga kwento mula sa Visayas.</p>
+                    <div class="project-links">
+                        <a href="#">Live Demo</a>
+                        <a href="#">GitHub</a>
+                    </div>
+                </div>
+            </div>
         </div>
-    </div>
+    </section>
 
-    <script>
-        const emailInput = document.getElementById('emailInput');
-        const generateBtn = document.getElementById('generateBtn');
-        const copyBtn = document.getElementById('copyBtn');
-        const inboxDisplay = document.getElementById('inboxDisplay');
-        const PIPEDREAM_URL_BASE = 'https://api.pipedream.com/v1/data_stores/ds_1OuNodY/keys/';
-        const BEARER_TOKEN = 'b59e464c567a2ce3de4b30e3c83a34d8';
-        // Alternative proxy with better header support
-        const PROXY_URL = 'https://cors-anywhere.herokuapp.com/';
+    <!-- Skills Section -->
+    <section id="skills">
+        <div class="container">
+            <h2>Mga Kasanayan</h2>
+            <div class="skills-list">
+                <span class="skill-tag">HTML</span>
+                <span class="skill-tag">CSS</span>
+                <span class="skill-tag">JavaScript</span>
+                <span class="skill-tag">GitHub</span>
+                <span class="skill-tag">Responsive Design</span>
+            </div>
+        </div>
+    </section>
 
-        function generateRandomEmail() {
-            const randomString = Math.random().toString(36).substring(2, 10);
-            const domain = 'jared.work.gd';
-            emailInput.value = `${randomString}@${domain}`;
-            fetchInboxData();
-        }
+    <!-- Contact Section -->
+    <section id="contact">
+        <div class="container">
+            <h2>Makipag-ugnayan</h2>
+            <p>Interesado kang makipagtulungan o magtanong? Hanapin mo ako dito:</p>
+            <div class="contact-links">
+                <a href="mailto:juan@example.com">Email</a>
+                <a href="#">LinkedIn</a>
+                <a href="#">GitHub</a>
+                <a href="#">Facebook</a>
+            </div>
+        </div>
+    </section>
 
-        function copyEmailToClipboard() {
-            if (!emailInput.value) {
-                alert('Mangyaring magpasok o bumuo ng email muna!');
-                return;
-            }
-            navigator.clipboard.writeText(emailInput.value)
-                .then(() => alert('Nakopya na ang email sa clipboard!'))
-                .catch(err => console.error('Pagkopya ay nabigo:', err));
-        }
-
-        async function fetchInboxData() {
-            const email = emailInput.value.trim();
-            if (!email) {
-                inboxDisplay.textContent = 'Mangyaring magpasok o bumuo ng email para ma-load ang data.';
-                return;
-            }
-
-            const targetUrl = `${PIPEDREAM_URL_BASE}${email}`;
-            const fullUrl = `${PROXY_URL}${targetUrl}`;
-
-            try {
-                const response = await fetch(fullUrl, {
-                    method: 'GET',
-                    headers: {
-                        'Authorization': `Bearer ${BEARER_TOKEN}`,
-                        'Accept': 'application/json'
-                    }
-                });
-
-                if (!response.ok) throw new Error(`HTTP Error! Status: ${response.status} - ${response.statusText}`);
-                
-                const data = await response.json();
-                inboxDisplay.textContent = JSON.stringify(data, null, 2);
-            } catch (error) {
-                inboxDisplay.textContent = `Error sa pagkuha ng data: ${error.message}\nMaaaring kailangan mong unang buksan ang proxy sa: https://cors-anywhere.herokuapp.com/corsdemo`;
-                console.error('Fetch Error:', error);
-            }
-        }
-
-        generateBtn.addEventListener('click', generateRandomEmail);
-        copyBtn.addEventListener('click', copyEmailToClipboard);
-        emailInput.addEventListener('input', fetchInboxData);
-
-        setInterval(fetchInboxData, 5000);
-        window.addEventListener('load', generateRandomEmail);
-    </script>
+    <!-- Footer -->
+    <footer>
+        <p>&copy; 2026 Jared</p>
+    </footer>
 </body>
 </html>
