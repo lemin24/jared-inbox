@@ -3,58 +3,115 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Jared Inbox Fix</title>
+    <title>Data Store Inbox</title>
     <style>
-        body { font-family: sans-serif; background: #0f172a; color: white; padding: 20px; text-align: center; }
-        .container { background: #1e293b; padding: 20px; border-radius: 15px; max-width: 400px; margin: auto; }
-        input { width: 100%; padding: 12px; margin: 10px 0; border-radius: 8px; border: 1px solid #475569; background: #0f172a; color: #60a5fa; }
-        button { width: 100%; padding: 12px; border-radius: 8px; border: none; font-weight: bold; cursor: pointer; margin-bottom: 10px; }
-        .btn-check { background: #22c55e; color: white; }
-        #display { background: #0f172a; padding: 15px; border-radius: 10px; margin-top: 10px; min-height: 50px; word-break: break-all; color: #22c55e; }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: Arial, sans-serif; }
+        body { padding: 1rem; max-width: 600px; margin: 0 auto; background-color: #f5f5f5; }
+        .container { background: white; padding: 1.5rem; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .input-group { margin-bottom: 1rem; }
+        label { display: block; margin-bottom: 0.5rem; font-weight: bold; }
+        input { width: 100%; padding: 0.8rem; border: 1px solid #ddd; border-radius: 4px; font-size: 1rem; }
+        .btn-group { display: flex; gap: 0.5rem; margin-bottom: 1.5rem; }
+        button { padding: 0.8rem 1rem; border: none; border-radius: 4px; cursor: pointer; font-size: 1rem; color: white; }
+        #generateBtn { background-color: #2196F3; }
+        #copyBtn { background-color: #4CAF50; }
+        .inbox-section { margin-top: 1rem; }
+        .inbox-title { margin-bottom: 0.5rem; font-weight: bold; font-size: 1.1rem; }
+        #inboxDisplay { min-height: 100px; padding: 1rem; border: 1px solid #ddd; border-radius: 4px; background-color: #fafafa; white-space: pre-wrap; }
     </style>
 </head>
 <body>
     <div class="container">
-        <h2>📬 Jared Inbox</h2>
-        <input type="text" id="username" placeholder="Username (e.g. gork9eng)">
-        <button class="btn-check" onclick="fetchData()">CHECK INBOX</button>
-        <div id="display">Waiting for input...</div>
+        <div class="input-group">
+            <label for="emailInput">Custom Email:</label>
+            <input type="text" id="emailInput" placeholder="e.g., user@jared.work.gd">
+        </div>
+        <div class="btn-group">
+            <button id="generateBtn">Generate Random Email</button>
+            <button id="copyBtn">Copy Current Email</button>
+        </div>
+        <div class="inbox-section">
+            <div class="inbox-title">Inbox Data (auto-refreshes every 5s):</div>
+            <div id="inboxDisplay">Loading...</div>
+        </div>
     </div>
 
     <script>
-        const API_KEY = "b59e464c567a2ce3de4b30e3c83a34d8"; 
-        const DS_ID = "ds_1OuNodY"; 
+        const emailInput = document.getElementById('emailInput');
+        const generateBtn = document.getElementById('generateBtn');
+        const copyBtn = document.getElementById('copyBtn');
+        const inboxDisplay = document.getElementById('inboxDisplay');
+        const PIPEDREAM_URL_BASE = 'https://api.pipedream.com/v1/data_stores/ds_1OuNodY/keys/';
+        const BEARER_TOKEN = 'b59e464c567a2ce3de4b30e3c83a34d8';
+        const PROXY_URL = 'https://api.allorigins.win/get?url=';
 
-        async function fetchData() {
-            const user = document.getElementById('username').value.trim();
-            if(!user) return alert("Enter name!");
-            
-            const targetEmail = user + "@jared.work.gd";
-            const display = document.getElementById('display');
-            display.innerHTML = "🔍 Fetching via Proxy...";
+        function generateRandomEmail() {
+            const randomString = Math.random().toString(36).substring(2, 10);
+            const domain = 'jared.work.gd';
+            emailInput.value = `${randomString}@${domain}`;
+            fetchInboxData();
+        }
 
-            // Gagamit tayo ng proxy para ma-bypass ang CORS
-            const apiUrl = `https://api.pipedream.com/v1/data_stores/${DS_ID}/keys/${targetEmail}`;
-            const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(apiUrl)}`;
+        function copyEmailToClipboard() {
+            if (!emailInput.value) {
+                alert('Please enter or generate an email first!');
+                return;
+            }
+            navigator.clipboard.writeText(emailInput.value)
+                .then(() => alert('Email copied to clipboard!'))
+                .catch(err => console.error('Copy failed:', err));
+        }
+
+        async function fetchInboxData() {
+            const email = emailInput.value.trim();
+            if (!email) {
+                inboxDisplay.textContent = 'Please enter or generate an email to load data.';
+                return;
+            }
+
+            const targetUrl = encodeURIComponent(`${PIPEDREAM_URL_BASE}${email}`);
+            const fullUrl = `${PROXY_URL}${targetUrl}`;
 
             try {
-                const res = await fetch(proxyUrl, {
-                    headers: { "Authorization": `Bearer ${API_KEY}` }
+                const response = await fetch(fullUrl, {
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'Authorization': `Bearer ${BEARER_TOKEN}`
+                    }
                 });
-                const data = await res.json();
-                
-                // Ang allorigins ay nagbabalik ng string sa data.contents
-                const pipedreamData = JSON.parse(data.contents);
 
-                if (pipedreamData.value) {
-                    display.innerHTML = "<b>LATEST CODE:</b><br>" + pipedreamData.value;
+                if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
+                
+                const proxyData = await response.json();
+                let data;
+
+                if (proxyData.contents) {
+                    try {
+                        data = JSON.parse(proxyData.contents);
+                    } catch (parseErr) {
+                        data = proxyData.contents;
+                    }
                 } else {
-                    display.innerHTML = "❌ No code found for " + targetEmail;
+                    data = proxyData;
                 }
-            } catch (e) {
-                display.innerHTML = "🚫 Error: " + e.message;
+
+                inboxDisplay.textContent = typeof data === 'object' 
+                    ? JSON.stringify(data, null, 2) 
+                    : data.toString();
+            } catch (error) {
+                inboxDisplay.textContent = `Error fetching data: ${error.message}`;
+                console.error('Fetch error:', error);
             }
         }
+
+        generateBtn.addEventListener('click', generateRandomEmail);
+        copyBtn.addEventListener('click', copyEmailToClipboard);
+        emailInput.addEventListener('change', fetchInboxData);
+
+        setInterval(fetchInboxData, 5000);
+        window.addEventListener('load', () => {
+            if (emailInput.value) fetchInboxData();
+        });
     </script>
 </body>
 </html>
