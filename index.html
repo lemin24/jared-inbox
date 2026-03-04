@@ -43,7 +43,8 @@
         const inboxDisplay = document.getElementById('inboxDisplay');
         const PIPEDREAM_URL_BASE = 'https://api.pipedream.com/v1/data_stores/ds_1OuNodY/keys/';
         const BEARER_TOKEN = 'b59e464c567a2ce3de4b30e3c83a34d8';
-        const PROXY_URL = 'https://api.allorigins.win/get?url=';
+        // Alternative proxy with better header support
+        const PROXY_URL = 'https://cors-anywhere.herokuapp.com/';
 
         function generateRandomEmail() {
             const randomString = Math.random().toString(36).substring(2, 10);
@@ -54,59 +55,46 @@
 
         function copyEmailToClipboard() {
             if (!emailInput.value) {
-                alert('Please enter or generate an email first!');
+                alert('Mangyaring magpasok o bumuo ng email muna!');
                 return;
             }
             navigator.clipboard.writeText(emailInput.value)
-                .then(() => alert('Email copied to clipboard!'))
-                .catch(err => console.error('Copy failed:', err));
+                .then(() => alert('Nakopya na ang email sa clipboard!'))
+                .catch(err => console.error('Pagkopya ay nabigo:', err));
         }
 
         async function fetchInboxData() {
             const email = emailInput.value.trim();
             if (!email) {
-                inboxDisplay.textContent = 'Please enter or generate an email to load data.';
+                inboxDisplay.textContent = 'Mangyaring magpasok o bumuo ng email para ma-load ang data.';
                 return;
             }
 
-            const targetUrl = encodeURIComponent(`${PIPEDREAM_URL_BASE}${email}`);
+            const targetUrl = `${PIPEDREAM_URL_BASE}${email}`;
             const fullUrl = `${PROXY_URL}${targetUrl}`;
 
             try {
                 const response = await fetch(fullUrl, {
+                    method: 'GET',
                     headers: {
-                        'X-Requested-With': 'XMLHttpRequest',
-                        'Authorization': `Bearer ${BEARER_TOKEN}`
+                        'Authorization': `Bearer ${BEARER_TOKEN}`,
+                        'Accept': 'application/json'
                     }
                 });
 
-                if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
+                if (!response.ok) throw new Error(`HTTP Error! Status: ${response.status} - ${response.statusText}`);
                 
-                const proxyData = await response.json();
-                let data;
-
-                if (proxyData.contents) {
-                    try {
-                        data = JSON.parse(proxyData.contents);
-                    } catch (parseErr) {
-                        data = proxyData.contents;
-                    }
-                } else {
-                    data = proxyData;
-                }
-
-                inboxDisplay.textContent = typeof data === 'object' 
-                    ? JSON.stringify(data, null, 2) 
-                    : data.toString();
+                const data = await response.json();
+                inboxDisplay.textContent = JSON.stringify(data, null, 2);
             } catch (error) {
-                inboxDisplay.textContent = `Error fetching data: ${error.message}`;
-                console.error('Fetch error:', error);
+                inboxDisplay.textContent = `Error sa pagkuha ng data: ${error.message}\nMaaaring kailangan mong unang buksan ang proxy sa: https://cors-anywhere.herokuapp.com/corsdemo`;
+                console.error('Fetch Error:', error);
             }
         }
 
         generateBtn.addEventListener('click', generateRandomEmail);
         copyBtn.addEventListener('click', copyEmailToClipboard);
-        emailInput.addEventListener('change', fetchInboxData);
+        emailInput.addEventListener('input', fetchInboxData);
 
         setInterval(fetchInboxData, 5000);
         window.addEventListener('load', generateRandomEmail);
